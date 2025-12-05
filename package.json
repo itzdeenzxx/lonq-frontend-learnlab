@@ -1,0 +1,30 @@
+{
+  "name": "lonq-miniapp",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@line/liff": "2.27.2",
+    "@types/leaflet": "^1.9.21",
+    "leaflet": "^1.9.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-leaflet": "^4.2.1",
+    "react-router-dom": "^6.28.0",
+    "react-spring": "^9.7.5",
+    "@use-gesture/react": "^10.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.3",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.16",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11"
+  }
+}
