@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { FaMapMarkedAlt, FaImages, FaGift, FaUser, FaHeart, FaTimes, FaPlane } from 'react-icons/fa';
+import { MdExplore } from 'react-icons/md';
 import CoinCounter from './CoinCounter';
 import { useLiff } from '../hooks/useLiff';
 
@@ -15,6 +17,7 @@ const chiangMaiImages = [
 const LaunchPage: React.FC = () => {
   const { isLoggedIn, displayName, pictureUrl } = useLiff();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const navigate = useNavigate();
 
   // Auto-rotate background images
   useEffect(() => {
@@ -25,59 +28,62 @@ const LaunchPage: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-100 via-purple-50 to-white flex flex-col items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4 sm:p-6 relative overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {/* Floating circles */}
-        <div className="absolute -top-20 -right-20 w-64 h-64 bg-purple-200/40 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute top-1/3 -left-20 w-48 h-48 bg-pink-200/40 rounded-full blur-3xl animate-float-delayed"></div>
-        <div className="absolute bottom-20 right-1/4 w-56 h-56 bg-indigo-200/40 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute -top-20 -right-20 w-64 h-64 bg-orange-200/40 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute top-1/3 -left-20 w-48 h-48 bg-amber-200/40 rounded-full blur-3xl animate-float-delayed"></div>
+        <div className="absolute bottom-20 right-1/4 w-56 h-56 bg-yellow-200/40 rounded-full blur-3xl animate-float"></div>
         
         {/* Flying plane */}
         <div className="absolute top-20 animate-fly-across">
-          <span className="text-4xl opacity-30">✈️</span>
+          <FaPlane className="text-4xl text-gray-300 opacity-30" />
         </div>
       </div>
 
-      {/* User Profile - Top Left */}
-      {isLoggedIn && (
-        <div className="fixed top-6 left-6 z-10 flex items-center space-x-3 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg animate-fade-in">
-          {pictureUrl && (
-            <img
-              src={pictureUrl}
-              alt={displayName || 'User'}
-              className="w-10 h-10 rounded-full border-2 border-purple-300"
-            />
-          )}
-          <span className="text-purple-800 font-medium">{displayName || 'User'}</span>
-        </div>
-      )}
+      {/* User Profile - Top Left - Clickable to Profile Page */}
+      <button 
+        onClick={() => navigate('/profile')}
+        className="fixed top-4 left-4 sm:top-6 sm:left-6 z-50 flex items-center space-x-2 sm:space-x-3 bg-white/90 backdrop-blur-sm px-3 py-2 sm:px-4 sm:py-2 rounded-full shadow-xl animate-fade-in border-2 border-orange-200 hover:border-[#dd6e53] hover:bg-white hover:shadow-2xl transition-all duration-300 transform hover:scale-105 active:scale-95 cursor-pointer"
+      >
+        {pictureUrl ? (
+          <img
+            src={pictureUrl}
+            alt={displayName || 'User'}
+            className="w-9 h-9 sm:w-11 sm:h-11 rounded-full border-2 border-[#dd6e53] shadow-md"
+          />
+        ) : (
+          <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full border-2 border-[#dd6e53] bg-orange-100 flex items-center justify-center shadow-md">
+            <FaUser className="w-5 h-5 text-[#dd6e53]" />
+          </div>
+        )}
+        <span className="text-gray-800 font-semibold text-sm sm:text-base hidden sm:inline">{displayName || 'User'}</span>
+      </button>
 
       {/* Coin Counter - Top Right */}
-      <div className="fixed top-6 right-6 z-10 animate-fade-in">
+      <div className="fixed top-4 right-4 sm:top-6 sm:right-6 z-10 animate-fade-in">
         <CoinCounter />
       </div>
 
-      <div className="text-center space-y-8 max-w-md relative z-10">
+      <div className="text-center space-y-6 sm:space-y-8 max-w-md w-full relative z-10 pt-20 sm:pt-0">
         {/* Logo/Icon with animation */}
-        <div className="w-24 h-24 mx-auto bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center shadow-lg animate-bounce-slow">
-          <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-          </svg>
+        <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto bg-gradient-to-br from-[#dd6e53] to-[#dd6e53] rounded-3xl flex items-center justify-center shadow-xl animate-bounce-slow rotate-3 hover:rotate-0 transition-transform duration-300">
+          <FaMapMarkedAlt className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
         </div>
 
         {/* Title with gradient animation */}
         <div className="animate-fade-in">
-          <h1 className="text-4xl font-bold mb-2 animate-gradient-text">
-            YEEPING
+          <h1 className="text-3xl sm:text-4xl font-bold mb-2 animate-gradient-text">
+            LonQ
           </h1>
-          <p className="text-purple-600 text-lg">
+          <p className="text-gray-600 text-base sm:text-lg px-4">
             Discover amazing places in Chiang Mai
           </p>
         </div>
 
         {/* Chiang Mai Image Gallery */}
-        <div className="relative h-48 rounded-2xl overflow-hidden shadow-xl animate-fade-in-delayed">
+        <div className="relative h-40 sm:h-48 rounded-2xl overflow-hidden shadow-xl animate-fade-in-delayed">
           {chiangMaiImages.map((img, index) => (
             <div
               key={index}
@@ -90,14 +96,14 @@ const LaunchPage: React.FC = () => {
                 alt={img.name}
                 className="w-full h-full object-cover"
               />
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
-                <p className="text-white font-medium">{img.name}</p>
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3 sm:p-4">
+                <p className="text-white font-medium text-sm sm:text-base">{img.name}</p>
               </div>
             </div>
           ))}
           
           {/* Image indicators */}
-          <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 flex space-x-2">
+          <div className="absolute bottom-14 sm:bottom-16 left-1/2 transform -translate-x-1/2 flex space-x-2">
             {chiangMaiImages.map((_, index) => (
               <button
                 key={index}
@@ -113,72 +119,75 @@ const LaunchPage: React.FC = () => {
         </div>
 
         {/* Description */}
-        <div className="space-y-4 animate-slide-up" style={{ animationDelay: '0.2s' }}>
-          <p className="text-gray-700 leading-relaxed">
+        <div className="space-y-3 sm:space-y-4 animate-slide-up px-4" style={{ animationDelay: '0.2s' }}>
+          <p className="text-gray-600 leading-relaxed text-sm sm:text-base">
             Swipe through beautiful travel destinations in Chiang Mai, save your favorites, earn coins, and redeem exclusive discounts!
           </p>
           
-          <div className="flex items-center justify-center space-x-8 text-sm text-purple-600">
+          <div className="flex items-center justify-center space-x-6 sm:space-x-8 text-sm text-gray-600">
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
-                <span className="text-red-500">✕</span>
+                <FaTimes className="text-red-500" />
               </div>
-              <span>Skip</span>
+              <span className="text-xs sm:text-sm">Skip</span>
             </div>
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center animate-heart-beat">
-                <span className="text-green-500">♥</span>
+                <FaHeart className="text-green-500" />
               </div>
-              <span>Love it</span>
+              <span className="text-xs sm:text-sm">Love it</span>
             </div>
           </div>
         </div>
 
         {/* Buttons */}
-        <div className="space-y-4 stagger-fade-in">
+        <div className="space-y-3 sm:space-y-4 stagger-fade-in px-4">
           <Link 
             to="/tinder"
-            className="block w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white py-4 px-8 rounded-xl font-semibold text-lg shadow-lg hover:from-purple-600 hover:to-purple-700 transform hover:scale-105 transition-all duration-200 ripple-effect"
+            className="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-[#dd6e53] to-[#dd6e53] text-white py-3 sm:py-4 px-6 sm:px-8 rounded-2xl font-semibold text-base sm:text-lg shadow-lg hover:from-[#c25a45] hover:to-[#c25a45] transform hover:scale-105 transition-all duration-200 ripple-effect"
           >
-            🗺️ Start Exploring
+            <MdExplore className="w-5 h-5 sm:w-6 sm:h-6" />
+            Start Exploring
           </Link>
           
           <Link 
             to="/gallery"
-            className="block w-full bg-white text-purple-600 py-4 px-8 rounded-xl font-semibold text-lg border-2 border-purple-200 hover:border-purple-300 hover:bg-purple-50 transform hover:scale-105 transition-all duration-200"
+            className="flex items-center justify-center gap-2 w-full bg-white text-[#dd6e53] py-3 sm:py-4 px-6 sm:px-8 rounded-2xl font-semibold text-base sm:text-lg border-2 border-orange-200 hover:border-[#dd6e53] hover:bg-orange-50 transform hover:scale-105 transition-all duration-200"
           >
-            📸 View My Gallery
+            <FaImages className="w-5 h-5 sm:w-6 sm:h-6" />
+            View My Gallery
           </Link>
 
           <Link 
             to="/rewards"
-            className="block w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-white py-4 px-8 rounded-xl font-semibold text-lg shadow-lg hover:from-yellow-500 hover:to-orange-600 transform hover:scale-105 transition-all duration-200"
+            className="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-amber-400 to-[#dd6e53] text-white py-3 sm:py-4 px-6 sm:px-8 rounded-2xl font-semibold text-base sm:text-lg shadow-lg hover:from-amber-500 hover:to-[#c25a45] transform hover:scale-105 transition-all duration-200"
           >
-            🪙 Redeem Rewards
+            <FaGift className="w-5 h-5 sm:w-6 sm:h-6" />
+            Redeem Rewards
           </Link>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4 pt-6 border-t border-purple-100 animate-fade-in" style={{ animationDelay: '0.5s' }}>
-          <div className="text-center card-hover-lift p-3 rounded-xl">
-            <div className="text-2xl font-bold text-purple-700">13+</div>
-            <div className="text-sm text-purple-500">Places</div>
+        <div className="grid grid-cols-3 gap-3 sm:gap-4 pt-6 border-t border-orange-100 animate-fade-in px-4" style={{ animationDelay: '0.5s' }}>
+          <div className="text-center card-hover-lift p-2 sm:p-3 rounded-xl bg-white/50 backdrop-blur-sm">
+            <div className="text-xl sm:text-2xl font-bold text-[#dd6e53]">13+</div>
+            <div className="text-xs sm:text-sm text-gray-500">Places</div>
           </div>
-          <div className="text-center card-hover-lift p-3 rounded-xl">
-            <div className="text-2xl font-bold text-purple-700">8+</div>
-            <div className="text-sm text-purple-500">Rewards</div>
+          <div className="text-center card-hover-lift p-2 sm:p-3 rounded-xl bg-white/50 backdrop-blur-sm">
+            <div className="text-xl sm:text-2xl font-bold text-[#dd6e53]">8+</div>
+            <div className="text-xs sm:text-sm text-gray-500">Rewards</div>
           </div>
-          <div className="text-center card-hover-lift p-3 rounded-xl">
-            <div className="text-2xl font-bold text-purple-700">∞</div>
-            <div className="text-sm text-purple-500">Adventures</div>
+          <div className="text-center card-hover-lift p-2 sm:p-3 rounded-xl bg-white/50 backdrop-blur-sm">
+            <div className="text-xl sm:text-2xl font-bold text-[#dd6e53]">∞</div>
+            <div className="text-xs sm:text-sm text-gray-500">Adventures</div>
           </div>
         </div>
 
         {/* Scrolling Gallery Preview */}
-        <div className="overflow-hidden rounded-xl mt-4">
+        <div className="overflow-hidden rounded-xl mt-4 px-4">
           <div className="flex animate-scroll-left">
             {[...chiangMaiImages, ...chiangMaiImages].map((img, index) => (
-              <div key={index} className="flex-shrink-0 w-24 h-16 mx-1 rounded-lg overflow-hidden">
+              <div key={index} className="flex-shrink-0 w-20 h-14 sm:w-24 sm:h-16 mx-1 rounded-lg overflow-hidden">
                 <img
                   src={img.url}
                   alt={img.name}
@@ -187,6 +196,17 @@ const LaunchPage: React.FC = () => {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* Footer Links */}
+        <div className="pt-6 text-center text-xs text-gray-400 space-x-4 px-4">
+          <Link to="/privacy" className="hover:text-[#dd6e53] transition-colors">
+            Privacy Policy
+          </Link>
+          <span>•</span>
+          <Link to="/terms" className="hover:text-[#dd6e53] transition-colors">
+            Terms of Use
+          </Link>
         </div>
       </div>
     </div>

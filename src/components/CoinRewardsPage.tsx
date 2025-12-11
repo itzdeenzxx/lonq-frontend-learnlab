@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { FaCoins, FaCamera, FaCheckCircle, FaTrophy, FaStar, FaGift, FaCopy, FaMapMarkerAlt, FaArrowLeft, FaMountain, FaUtensils, FaHeart } from 'react-icons/fa';
 import { CoinSystem } from '../utils/coinSystem';
+import { UserService } from '../services/firebaseService';
+import { useLiff } from '../hooks/useLiff';
+import { QRCodeSVG } from 'qrcode.react';
 
 interface Reward {
   id: string;
@@ -108,46 +112,78 @@ const rewards: Reward[] = [
   }
 ];
 
-const categoryIcons: Record<string, string> = {
-  discount: '🏷️',
-  experience: '🎯',
-  food: '🍜',
-  souvenir: '🎁'
+const categoryIcons: Record<string, React.ReactNode> = {
+  discount: <FaGift className="inline w-4 h-4" />,
+  experience: <FaMountain className="inline w-4 h-4" />,
+  food: <FaUtensils className="inline w-4 h-4" />,
+  souvenir: <FaHeart className="inline w-4 h-4" />
 };
 
 const categoryColors: Record<string, string> = {
   discount: 'from-blue-400 to-blue-600',
   experience: 'from-green-400 to-green-600',
-  food: 'from-orange-400 to-orange-600',
+  food: 'from-[#dd6e53] to-[#dd6e53]',
   souvenir: 'from-pink-400 to-pink-600'
 };
 
 const CoinRewardsPage: React.FC = () => {
+  const { userId } = useLiff();
   const [userCoins, setUserCoins] = useState<number>(0);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [redeemedReward, setRedeemedReward] = useState<Reward | null>(null);
+  const [redemptionData, setRedemptionData] = useState<any>(null);
   const [showModal, setShowModal] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    const profile = CoinSystem.getUserProfile();
-    setUserCoins(profile.totalCoins);
-  }, []);
+    const fetchCoins = async () => {
+      if (userId) {
+        const coins = await UserService.getCoins(userId);
+        setUserCoins(coins);
+      } else {
+        const profile = CoinSystem.getUserProfile();
+        setUserCoins(profile.totalCoins);
+      }
+    };
+    fetchCoins();
+  }, [userId]);
 
   const filteredRewards = selectedCategory === 'all' 
     ? rewards 
     : rewards.filter(r => r.category === selectedCategory);
 
-  const handleRedeem = (reward: Reward) => {
+  const handleRedeem = async (reward: Reward) => {
     if (userCoins >= reward.coinCost) {
-      // Deduct coins
-      const profile = CoinSystem.getUserProfile();
-      profile.totalCoins -= reward.coinCost;
-      CoinSystem.saveUserProfile(profile);
-      setUserCoins(profile.totalCoins);
-      
-      // Show success modal
-      setRedeemedReward(reward);
-      setShowModal(true);
+      setIsLoading(true);
+      try {
+        if (userId) {
+          // Real Firebase Redemption
+          const result = await UserService.redeemReward(userId, reward.id, reward.coinCost, reward);
+          setRedemptionData(result);
+          
+          // Update local coin state immediately
+          setUserCoins(prev => prev - reward.coinCost);
+        } else {
+          // Fallback for non-logged in users (local storage)
+          const profile = CoinSystem.getUserProfile();
+          profile.totalCoins -= reward.coinCost;
+          CoinSystem.saveUserProfile(profile);
+          setUserCoins(profile.totalCoins);
+          setRedemptionData({
+            qrCodeData: `LOCAL:${Date.now()}:${reward.id}`,
+            id: `local-${Date.now()}`
+          });
+        }
+        
+        // Show success modal
+        setRedeemedReward(reward);
+        setShowModal(true);
+      } catch (error) {
+        console.error("Redemption failed:", error);
+        alert("Redemption failed. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -165,31 +201,29 @@ const CoinRewardsPage: React.FC = () => {
       </div>
 
       {/* Header */}
-      <div className="bg-gradient-to-r from-yellow-400 via-orange-400 to-amber-500 text-white sticky top-0 z-20">
-        <div className="p-4 sm:p-6">
+      <div className="bg-gradient-to-r from-[#dd6e53] via-#dd6e53 to-amber-500 text-white sticky top-0 z-20">
+        <div className="p-3 sm:p-4 md:p-6">
           <div className="flex items-center justify-between max-w-6xl mx-auto">
             <Link 
               to="/"
               className="flex items-center space-x-2 text-white/90 hover:text-white transition-colors"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-              <span className="font-medium">Back</span>
+              <FaArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
+              <span className="font-medium text-xs sm:text-sm md:text-base">Back</span>
             </Link>
             
             <div className="text-center">
-              <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
-                <span className="animate-bounce-slow">🪙</span> Rewards
+              <h1 className="text-base sm:text-xl md:text-2xl font-bold flex items-center gap-2 justify-center">
+                <FaCoins className="w-5 h-5 sm:w-6 sm:h-6 animate-bounce-slow" /> Rewards
               </h1>
-              <p className="text-sm text-white/80">Redeem your coins for discounts</p>
+              <p className="text-xs sm:text-sm text-white/80">Redeem your coins for discounts</p>
             </div>
             
             {/* Coin Balance */}
-            <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">
-              <div className="flex items-center space-x-2">
-                <span className="text-2xl">🪙</span>
-                <span className="font-bold text-lg">{userCoins.toLocaleString()}</span>
+            <div className="bg-white/20 backdrop-blur-sm px-2 py-1.5 sm:px-4 sm:py-2 rounded-full">
+              <div className="flex items-center space-x-1 sm:space-x-2">
+                <FaCoins className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="font-bold text-sm sm:text-lg">{userCoins.toLocaleString()}</span>
               </div>
             </div>
           </div>
@@ -198,53 +232,57 @@ const CoinRewardsPage: React.FC = () => {
 
       <div className="max-w-6xl mx-auto px-4 py-6 relative z-10">
         {/* How to Earn Coins Section */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 border border-yellow-100 animate-fade-in">
-          <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <span className="text-2xl">💡</span> How to Earn Coins
+        <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 mb-6 border border-orange-100 animate-fade-in">
+          <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-3 sm:mb-4 flex items-center gap-2">
+            <FaCoins className="w-5 h-5 sm:w-6 sm:h-6 text-[#dd6e53]" /> How to Earn Coins
           </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl">
-              <div className="text-3xl mb-2">📸</div>
-              <div className="font-semibold text-purple-700">+10 coins</div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+            <div className="text-center p-3 sm:p-4 bg-gradient-to-br from-orange-50 to-amber-100 rounded-xl">
+              <FaCamera className="w-7 h-7 sm:w-8 sm:h-8 mx-auto mb-2 text-[#dd6e53]" />
+              <div className="font-semibold text-[#dd6e53] text-sm sm:text-base">+10 coins</div>
               <div className="text-xs text-gray-600">Upload Photo</div>
             </div>
-            <div className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-xl">
-              <div className="text-3xl mb-2">✅</div>
-              <div className="font-semibold text-green-700">+5 coins</div>
+            <div className="text-center p-3 sm:p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-xl">
+              <FaCheckCircle className="w-7 h-7 sm:w-8 sm:h-8 mx-auto mb-2 text-green-600" />
+              <div className="font-semibold text-green-700 text-sm sm:text-base">+5 coins</div>
               <div className="text-xs text-gray-600">Visit a Place</div>
             </div>
-            <div className="text-center p-4 bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl">
-              <div className="text-3xl mb-2">🏆</div>
-              <div className="font-semibold text-orange-700">+100 coins</div>
+            <div className="text-center p-3 sm:p-4 bg-gradient-to-br from-amber-50 to-orange-100 rounded-xl">
+              <FaTrophy className="w-7 h-7 sm:w-8 sm:h-8 mx-auto mb-2 text-[#dd6e53]" />
+              <div className="font-semibold text-orange-700 text-sm sm:text-base">+100 coins</div>
               <div className="text-xs text-gray-600">Complete Journey</div>
             </div>
-            <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl">
-              <div className="text-3xl mb-2">⭐</div>
-              <div className="font-semibold text-blue-700">+20 coins</div>
+            <div className="text-center p-3 sm:p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl">
+              <FaStar className="w-7 h-7 sm:w-8 sm:h-8 mx-auto mb-2 text-blue-600" />
+              <div className="font-semibold text-blue-700 text-sm sm:text-base">+20 coins</div>
               <div className="text-xs text-gray-600">Write Review</div>
             </div>
           </div>
         </div>
 
         {/* Category Filter */}
-        <div className="flex flex-wrap gap-2 mb-6 animate-fade-in-delayed">
+        <div className="flex flex-wrap gap-2 mb-4 sm:mb-6 animate-fade-in-delayed">
           {['all', 'food', 'experience', 'souvenir'].map((category) => (
             <button
               key={category}
               onClick={() => setSelectedCategory(category)}
-              className={`px-4 py-2 rounded-full font-medium text-sm transition-all duration-300 transform hover:scale-105 ${
+              className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-medium text-xs sm:text-sm transition-all duration-300 transform hover:scale-105 flex items-center gap-1.5 ${
                 selectedCategory === category
-                  ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg'
+                  ? 'bg-gradient-to-r from-[#dd6e53] to-[#dd6e53] text-white shadow-lg'
                   : 'bg-white text-gray-600 hover:bg-gray-100 shadow'
               }`}
             >
-              {category === 'all' ? '🎉 All' : `${categoryIcons[category]} ${category.charAt(0).toUpperCase() + category.slice(1)}`}
+              {category === 'all' ? (
+                <><FaGift className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> All</>
+              ) : (
+                <>{categoryIcons[category]} {category.charAt(0).toUpperCase() + category.slice(1)}</>
+              )}
             </button>
           ))}
         </div>
 
         {/* Rewards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
           {filteredRewards.map((reward, index) => (
             <div 
               key={reward.id}
@@ -252,32 +290,30 @@ const CoinRewardsPage: React.FC = () => {
               style={{ animationDelay: `${index * 100}ms` }}
             >
               {/* Image */}
-              <div className="relative h-40 overflow-hidden">
+              <div className="relative h-36 sm:h-40 overflow-hidden">
                 <img
                   src={reward.image}
                   alt={reward.name}
                   className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
                 />
-                <div className={`absolute top-3 left-3 bg-gradient-to-r ${categoryColors[reward.category]} text-white px-3 py-1 rounded-full text-xs font-medium`}>
-                  {categoryIcons[reward.category]} {reward.category}
+                <div className={`absolute top-2 left-2 sm:top-3 sm:left-3 bg-gradient-to-r ${categoryColors[reward.category]} text-white px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs font-medium flex items-center gap-1`}>
+                  {categoryIcons[reward.category]} <span className="hidden sm:inline">{reward.category}</span>
                 </div>
                 
                 {/* Coin Cost Badge */}
-                <div className="absolute top-3 right-3 bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1 shadow-lg">
-                  <span>🪙</span>
+                <div className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-gradient-to-r from-[#dd6e53] to-[#dd6e53] text-white px-2 py-1 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm font-bold flex items-center gap-1 shadow-lg">
+                  <FaCoins className="w-3 h-3 sm:w-4 sm:h-4" />
                   <span>{reward.coinCost}</span>
                 </div>
               </div>
 
               {/* Content */}
-              <div className="p-4">
-                <h3 className="font-bold text-gray-800 mb-2 line-clamp-1">{reward.name}</h3>
-                <p className="text-gray-600 text-sm mb-3 line-clamp-2">{reward.description}</p>
+              <div className="p-3 sm:p-4">
+                <h3 className="font-bold text-gray-800 mb-2 line-clamp-1 text-sm sm:text-base">{reward.name}</h3>
+                <p className="text-gray-600 text-xs sm:text-sm mb-3 line-clamp-2">{reward.description}</p>
                 
                 <div className="flex items-center text-xs text-gray-500 mb-3">
-                  <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                  </svg>
+                  <FaMapMarkerAlt className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                   {reward.location}
                 </div>
                 
@@ -289,14 +325,20 @@ const CoinRewardsPage: React.FC = () => {
 
                 <button
                   onClick={() => handleRedeem(reward)}
-                  disabled={userCoins < reward.coinCost}
-                  className={`w-full py-3 rounded-xl font-semibold text-sm transition-all duration-300 ${
-                    userCoins >= reward.coinCost
-                      ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white hover:from-yellow-500 hover:to-orange-600 transform hover:scale-105 shadow-lg'
+                  disabled={userCoins < reward.coinCost || isLoading}
+                  className={`w-full py-2 sm:py-3 rounded-xl font-semibold text-xs sm:text-sm transition-all duration-300 flex items-center justify-center gap-2 ${
+                    userCoins >= reward.coinCost && !isLoading
+                      ? 'bg-gradient-to-r from-[#dd6e53] to-[#dd6e53] text-white hover:from-[#c25a45] hover:to-[#c25a45] transform hover:scale-105 shadow-lg'
                       : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                   }`}
                 >
-                  {userCoins >= reward.coinCost ? '🎁 Redeem Now' : `Need ${reward.coinCost - userCoins} more coins`}
+                  {isLoading ? (
+                    <span className="animate-pulse">Processing...</span>
+                  ) : userCoins >= reward.coinCost ? (
+                    <><FaGift className="w-4 h-4" /> Redeem Now</>
+                  ) : (
+                    `Need ${reward.coinCost - userCoins} more coins`
+                  )}
                 </button>
               </div>
             </div>
@@ -304,12 +346,12 @@ const CoinRewardsPage: React.FC = () => {
         </div>
 
         {/* Chiang Mai Featured Places */}
-        <div className="mt-10 animate-fade-in">
-          <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <span className="text-2xl">🏔️</span> Featured Places in Chiang Mai
+        <div className="mt-8 sm:mt-10 animate-fade-in">
+          <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-3 sm:mb-4 flex items-center gap-2">
+            <FaMountain className="w-5 h-5 sm:w-6 sm:h-6 text-[#dd6e53]" /> Featured Places in Chiang Mai
           </h2>
-          <div className="bg-white rounded-2xl shadow-lg p-6 overflow-hidden">
-            <div className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide">
+          <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 overflow-hidden">
+            <div className="flex overflow-x-auto gap-3 sm:gap-4 pb-3 sm:pb-4 scrollbar-hide">
               {[
                 { name: 'Doi Suthep', image: 'https://upload.wikimedia.org/wikipedia/commons/0/0f/Ho_Kum_Luang_%28I%29.jpg', tag: 'Temple' },
                 { name: 'Old City', image: 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2e/0e/cd/b2/caption.jpg?w=900&h=500&s=1', tag: 'Culture' },
@@ -337,38 +379,49 @@ const CoinRewardsPage: React.FC = () => {
       {/* Redemption Success Modal */}
       {showModal && redeemedReward && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-white rounded-2xl max-w-sm w-full p-6 text-center animate-scale-in">
-            <div className="text-6xl mb-4 animate-bounce-slow">🎉</div>
-            <h3 className="text-xl font-bold text-gray-800 mb-2">Congratulations!</h3>
-            <p className="text-gray-600 mb-4">You've redeemed: {redeemedReward.name}</p>
+          <div className="bg-white rounded-2xl max-w-sm w-full p-4 sm:p-6 text-center animate-scale-in">
+            <FaGift className="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 text-[#dd6e53] animate-bounce-slow" />
+            <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-2">Congratulations!</h3>
+            <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4">You've redeemed: {redeemedReward.name}</p>
             
-            <div className="bg-gradient-to-r from-yellow-100 to-orange-100 rounded-xl p-4 mb-4">
-              <p className="text-sm text-gray-600 mb-2">Your discount code:</p>
-              <div className="flex items-center justify-center gap-2">
-                <code className="bg-white px-4 py-2 rounded-lg font-mono font-bold text-lg text-orange-600 border-2 border-dashed border-orange-300">
+            <div className="bg-gradient-to-r from-yellow-100 to-orange-100 rounded-xl p-3 sm:p-4 mb-3 sm:mb-4">
+              <p className="text-xs sm:text-sm text-gray-600 mb-2">Your discount code:</p>
+              <div className="flex items-center justify-center gap-2 mb-3">
+                <code className="bg-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg font-mono font-bold text-base sm:text-lg text-[#dd6e53] border-2 border-dashed border-orange-300">
                   {redeemedReward.discountCode}
                 </code>
                 <button
                   onClick={() => copyCode(redeemedReward.discountCode || '')}
-                  className="p-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+                  className="p-2 bg-[#dd6e53] text-white rounded-lg hover:bg-[#c25a45] transition-colors"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                  </svg>
+                  <FaCopy className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
               </div>
+              
+              {/* QR Code Section */}
+              {redemptionData && (
+                <div className="flex flex-col items-center justify-center bg-white p-3 rounded-lg border border-orange-200">
+                  <QRCodeSVG 
+                    value={redemptionData.qrCodeData || 'ERROR'} 
+                    size={128}
+                    level={"H"}
+                    includeMargin={true}
+                  />
+                  <p className="text-[10px] text-gray-400 mt-1">Scan to verify</p>
+                </div>
+              )}
             </div>
             
-            <p className="text-xs text-gray-500 mb-4">
+            <p className="text-xs text-gray-500 mb-3 sm:mb-4">
               Valid until: {redeemedReward.validUntil}<br/>
               Location: {redeemedReward.location}
             </p>
             
             <button
               onClick={() => setShowModal(false)}
-              className="w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white py-3 rounded-xl font-semibold hover:from-purple-600 hover:to-purple-700 transition-all"
+              className="w-full bg-gradient-to-r from-[#dd6e53] to-[#dd6e53] text-white py-2.5 sm:py-3 rounded-xl font-semibold text-sm sm:text-base hover:from-[#c25a45] hover:to-[#c25a45] transition-all flex items-center justify-center gap-2"
             >
-              Awesome! 🙌
+              <FaCheckCircle className="w-4 h-4" /> Awesome!
             </button>
           </div>
         </div>

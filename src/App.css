@@ -133,10 +133,10 @@
 /* Pulse glow for coins */
 @keyframes pulse-glow {
   0%, 100% {
-    box-shadow: 0 0 5px rgba(251, 191, 36, 0.5);
+    box-shadow: 0 0 5px rgba(249, 135, 11, 0.5);
   }
   50% {
-    box-shadow: 0 0 20px rgba(251, 191, 36, 0.8), 0 0 40px rgba(251, 191, 36, 0.4);
+    box-shadow: 0 0 20px rgba(249, 135, 11, 0.8), 0 0 40px rgba(249, 135, 11, 0.4);
   }
 }
 
@@ -204,12 +204,66 @@
 }
 
 .animate-gradient-text {
-  background: linear-gradient(90deg, #8b5cf6, #d946ef, #8b5cf6);
+  background: linear-gradient(90deg, #f9870b, #ff6b35, #f9870b);
   background-size: 200% auto;
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: gradient-text 3s ease infinite;
+}
+
+/* Primary Orange Theme */
+.bg-primary-gradient {
+  background: linear-gradient(135deg, #f9870b 0%, #ff6b35 50%, #ffb347 100%);
+}
+
+.text-primary-gradient {
+  background: linear-gradient(135deg, #f9870b, #ff6b35);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Modern Glass Effect */
+.glass {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.glass-dark {
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Modern Card Styles */
+.modern-card {
+  background: white;
+  border-radius: 24px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modern-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 60px rgba(249, 135, 11, 0.15);
+}
+
+/* Orange Glow Effect */
+@keyframes orange-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(249, 135, 11, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(249, 135, 11, 0.8), 0 0 50px rgba(249, 135, 11, 0.4);
+  }
+}
+
+.animate-orange-glow {
+  animation: orange-glow 2s ease-in-out infinite;
 }
 
 /* Hide scrollbar but allow scrolling */

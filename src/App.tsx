@@ -8,6 +8,11 @@ import TinderPage from "./components/TinderPage.js";
 import GalleryPage from "./components/GalleryPage.js";
 import RoutingPage from "./components/RoutingPage.js";
 import CoinRewardsPage from "./components/CoinRewardsPage.js";
+import PrivacyPolicy from "./components/PrivacyPolicy.js";
+import TermsOfUse from "./components/TermsOfUse.js";
+import ProfilePage from "./components/ProfilePage.js";
+import AddShortcutModal from "./components/AddShortcutModal.js";
+import { UserService } from "./services/firebaseService";
 
 // Create context for LIFF user data
 export const LiffContext = createContext<{
@@ -31,6 +36,7 @@ function App() {
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [pictureUrl, setPictureUrl] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const [showShortcutModal, setShowShortcutModal] = useState(false);
 
   useEffect(() => {
     // Initialize LIFF once when the app mounts.
@@ -59,7 +65,7 @@ function App() {
           // Get user profile
           liff
             .getProfile()
-            .then((profile) => {
+            .then(async (profile) => {
               setUserId(profile.userId);
               setDisplayName(profile.displayName);
               setPictureUrl(profile.pictureUrl || null);
@@ -69,6 +75,25 @@ function App() {
               localStorage.setItem("liff_displayName", profile.displayName);
               if (profile.pictureUrl) {
                 localStorage.setItem("liff_pictureUrl", profile.pictureUrl);
+              }
+
+              // Sync with Firebase
+              try {
+                await UserService.syncUser(profile.userId, profile.displayName, profile.pictureUrl || null);
+                console.log("User synced with Firebase");
+                
+                // Check if shortcut has been added before (from Firebase)
+                const hasShortcut = await UserService.hasAddedShortcut(profile.userId);
+                
+                // Show shortcut modal if not yet added and logged in
+                if (!hasShortcut && liff.isLoggedIn()) {
+                  // Small delay to let the app load first
+                  setTimeout(() => {
+                    setShowShortcutModal(true);
+                  }, 1500);
+                }
+              } catch (error) {
+                console.error("Error syncing user with Firebase:", error);
               }
 
               console.log("User logged in:", {
@@ -96,15 +121,15 @@ function App() {
   // Show loading screen while LIFF initializes
   if (!isLiffReady) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-100 via-purple-50 to-white flex flex-col items-center justify-center">
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center">
         <div className="text-center space-y-4">
-          <div className="w-16 h-16 mx-auto bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center animate-pulse">
+          <div className="w-16 h-16 mx-auto bg-gradient-to-br from-[#dd6e53] to-[#dd6e53] rounded-2xl flex items-center justify-center animate-pulse shadow-lg">
             <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
             </svg>
           </div>
-          <h2 className="text-xl font-bold text-purple-800">Loading LonQ...</h2>
-          <p className="text-purple-600">Please wait</p>
+          <h2 className="text-xl font-bold text-gray-800">Loading LonQ...</h2>
+          <p className="text-gray-500">Please wait</p>
         </div>
       </div>
     );
@@ -148,8 +173,18 @@ function App() {
           <Route path="/gallery" element={<GalleryPage />} />
           <Route path="/routing" element={<RoutingPage />} />
           <Route path="/rewards" element={<CoinRewardsPage />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsOfUse />} />
+          <Route path="/profile" element={<ProfilePage />} />
         </Routes>
       </Router>
+      
+      {/* Add Shortcut Modal */}
+      <AddShortcutModal 
+        isOpen={showShortcutModal} 
+        onClose={() => setShowShortcutModal(false)}
+        userId={userId}
+      />
     </LiffContext.Provider>
   );
 }

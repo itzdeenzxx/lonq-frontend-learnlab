@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { FaCoins, FaChevronRight, FaPlus } from 'react-icons/fa';
 import { CoinSystem } from '../utils/coinSystem';
+import { UserService } from '../services/firebaseService';
+import { useLiff } from '../hooks/useLiff';
 
 interface CoinCounterProps {
   showAnimation?: boolean;
@@ -8,13 +11,19 @@ interface CoinCounterProps {
 }
 
 const CoinCounter: React.FC<CoinCounterProps> = ({ showAnimation = false, onCoinEarned }) => {
+  const { userId } = useLiff();
   const [coins, setCoins] = useState<number>(0);
   const [animatingCoins, setAnimatingCoins] = useState<number>(0);
 
   useEffect(() => {
-    const updateCoins = () => {
-      const profile = CoinSystem.getUserProfile();
-      setCoins(profile.totalCoins);
+    const updateCoins = async () => {
+      if (userId) {
+        const userCoins = await UserService.getCoins(userId);
+        setCoins(userCoins);
+      } else {
+        const profile = CoinSystem.getUserProfile();
+        setCoins(profile.totalCoins);
+      }
     };
 
     updateCoins();
@@ -44,35 +53,34 @@ const CoinCounter: React.FC<CoinCounterProps> = ({ showAnimation = false, onCoin
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('coinUpdate' as any, handleCoinUpdate);
     };
-  }, [showAnimation, onCoinEarned]);
+  }, [showAnimation, onCoinEarned, userId]);
 
   return (
     <Link 
       to="/rewards"
-      className="flex items-center space-x-2 bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900 px-4 py-2 rounded-full shadow-lg hover:from-yellow-500 hover:to-yellow-600 transition-all duration-300 transform hover:scale-105 animate-pulse-glow cursor-pointer"
+      className="flex items-center space-x-1.5 sm:space-x-2 bg-gradient-to-r from-[#dd6e53] to-[#dd6e53] text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-full shadow-xl hover:shadow-2xl hover:from-[#c25a45] hover:to-[#c25a45] transition-all duration-300 transform hover:scale-105 active:scale-95 animate-pulse-glow cursor-pointer border-2 border-orange-300"
     >
       <div className="relative">
-        <span className="text-xl animate-bounce-slow">🪙</span>
+        <FaCoins className="w-5 h-5 sm:w-6 sm:h-6 animate-bounce-slow" />
         
         {animatingCoins > 0 && (
-          <div className="absolute -top-8 -right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full animate-bounce">
-            +{animatingCoins}
+          <div className="absolute -top-8 -right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full animate-bounce flex items-center gap-0.5">
+            <FaPlus className="w-2 h-2" />
+            {animatingCoins}
           </div>
         )}
       </div>
       
-      <span className="font-bold text-lg">
+      <span className="font-bold text-base sm:text-lg">
         {coins.toLocaleString()}
       </span>
       
-      <span className="text-sm font-medium opacity-80">
+      <span className="text-xs sm:text-sm font-medium opacity-90 hidden sm:inline">
         Coins
       </span>
       
       {/* Small arrow indicator */}
-      <svg className="w-4 h-4 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-      </svg>
+      <FaChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 opacity-80" />
     </Link>
   );
 };

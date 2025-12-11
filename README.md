@@ -152,11 +152,11 @@ src/
 
 3. Set environment variable in Vercel:
    - Go to your Vercel project settings
-   - Add `VITE_LIFF_ID` = `2008633505-wPepAaOy`
+   - Add \`VITE_LIFF_ID\` = \`2008633507-mNeMlqdX\`
 
 4. Update your LIFF app endpoint URL in LINE Developers Console with the Vercel URL
 
-5. Test in LINE app by opening: https://miniapp.line.me/2008633505-wPepAaOy
+5. Test in LINE app by opening: https://miniapp.line.me/2008633507-mNeMlqdX
 
 ## Technologies
 

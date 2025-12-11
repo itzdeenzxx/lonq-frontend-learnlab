@@ -1,21 +1,29 @@
 {
   "name": "lonq-miniapp",
   "version": "1.0.0",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "vite build",
+    "type-check": "tsc --noEmit",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@google/genai": "^1.32.0",
     "@line/liff": "2.27.2",
     "@types/leaflet": "^1.9.21",
+    "@use-gesture/react": "^10.3.1",
+    "firebase": "^12.6.0",
     "leaflet": "^1.9.4",
+    "lucide-react": "^0.556.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-icons": "^5.5.0",
     "react-leaflet": "^4.2.1",
     "react-router-dom": "^6.28.0",
-    "react-spring": "^9.7.5",
-    "@use-gesture/react": "^10.3.1"
+    "react-spring": "^9.7.5"
   },
   "devDependencies": {
     "@types/react": "^18.3.12",
