@@ -1,7 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 import type { TravelPlace } from '../types/TravelPlace';
 
-const ai = new GoogleGenAI({ apiKey: "AIzaSyBjbtI0MnYxefrPgUvWToOkHtuJybnRdwI" });
+const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
 
 export interface DayItinerary {
   day: number;
