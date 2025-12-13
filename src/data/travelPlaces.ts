@@ -1,30 +1,30 @@
 import type { TravelPlace } from '../types/TravelPlace';
 
 export const mockTravelPlaces: TravelPlace[] = [
-  {
+{
     id: '1',
-    name: 'Wat Umong',
-    lat: 18.783636,
-    long: 98.953588,
-    image: 'https://cms.dmpcdn.com/travel/2020/11/03/9d45da30-1dbc-11eb-9275-d9e61fe8653e_original.jpg',
-    description: 'It is a peaceful place for meditation and spiritual practice. Visitors can walk through the tunnels, take photos, and pay respect to the Buddha images enshrined within. The temple grounds are shaded by large trees, and during the rainy season, the old walls are beautifully covered with green moss, adding to the serene and lively atmosphere.',
+    name: 'The Baristro Asian Style',
+    lat: 18.789917,
+    long: 98.951711,
+    image: 'https://dsignsomething.com/wp-content/uploads/2021/07/THE-BARISTRO-ASIAN-STYLE-14-768x512.jpg',
+    description: 'A popular Japanese-style cafe in Chiang Mai known for its minimalist architecture, bamboo garden, and specialty matcha drinks. A perfect spot for photography and relaxing.',
     country: 'Thailand',
-    rating: 4.6,
-    distance: "~3.2km",
-    tags: ["Culture", "Green", "PM2.5 free"]
-  },
-  {
+    rating: 5.0,
+    distance: "~4.5km",
+    tags: ["Cafe", "Japanese Style", "Matcha", "Photogenic"]
+},
+{
     id: '2',
-    name: 'Ang Kaew',
-    lat: 18.8020,
-    long: 98.9446,
-    image: 'https://media.readthecloud.co/wp-content/uploads/2021/12/29133520/angkaew-11-750x500.jpg',
-    description: 'This small reservoir features pleasant walking and jogging trails, along with benches and open grassy lawns ideal for relaxing or picnicking',
+    name: 'Yoddoi Monjam (Chiang Mai)',
+    lat: 18.935626,
+    long: 98.822851,
+    image: 'https://lh3.googleusercontent.com/gps-cs-s/AG0ilSyOKJlgSpIMfPlIIKHrBgAoeMoCXpw2F31wVdhWYLA3d1VPAiOvsVHkExF-ITP2qOmO8TyLnlfyLnkpLr-TiRY6D8u1Om4GdVsH2wEweTymuOZAG7RLEGlEnVJeekJ681ZxJXe3x8CelPc=s1360-w1360-h1020-rw',
+    description: 'A scenic hilltop destination in Chiang Mai featuring a café and vibrant flower gardens. Famous for its panoramic mountain views, sea of mist in the morning, and beautiful hydrangea fields.',
     country: 'Thailand',
-    rating: 4.7,
-    distance: "~3.4km",
-    tags: ["Green", "PM2.5 free"]
-  },
+    rating: 4.5,
+    distance: "~37km",
+    tags: ["Nature", "Viewpoint", "Cafe", "Flower Garden", "Mist"]
+},
  {
     id: '3',
     name: 'Chiang Mai PAO Park',
