@@ -1,6 +1,4 @@
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
@@ -13,10 +11,36 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
+// Debug: Log Firebase config (without sensitive data)
+console.log("Firebase initializing with projectId:", firebaseConfig.projectId);
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-const db = getFirestore(app);
+
+// Initialize Storage (still needed for file uploads)
 const storage = getStorage(app);
 
-export { app, analytics, db, storage };
+// Analytics will be lazily initialized only when needed and supported
+let analyticsInstance: any = null;
+let analyticsInitialized = false;
+
+export const getAnalyticsInstance = async () => {
+  if (analyticsInitialized) return analyticsInstance;
+  
+  analyticsInitialized = true;
+  
+  try {
+    const { getAnalytics, isSupported } = await import("firebase/analytics");
+    const supported = await isSupported();
+    
+    if (supported) {
+      analyticsInstance = getAnalytics(app);
+    }
+  } catch (e) {
+    console.warn("Analytics not available:", e);
+  }
+  
+  return analyticsInstance;
+};
+
+export { app, storage };
